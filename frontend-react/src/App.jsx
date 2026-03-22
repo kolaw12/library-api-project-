@@ -8,7 +8,9 @@ import {
   RotateCcw, 
   AlertCircle,
   Library,
-  ChevronRight
+  ChevronRight,
+  Menu,
+  X
 } from 'lucide-react';
 
 import Dashboard from './pages/Dashboard';
@@ -20,31 +22,38 @@ import Defaulters from './pages/Defaulters';
 import SectionView from './pages/SectionView';
 import api from './api';
 
-const Sidebar = ({ sections }) => {
+const Sidebar = ({ sections, isOpen, toggle }) => {
   return (
-    <div className="sidebar">
+    <div className={`sidebar ${isOpen ? 'open' : ''}`}>
       <div className="logo-section">
         <Library color="#7c4dff" size={32} />
         <h2>BiblioDesk</h2>
+        <button 
+          className="mobile-close" 
+          onClick={toggle}
+          style={{ display: 'none', background: 'transparent', padding: '0.25rem' }}
+        >
+          <X />
+        </button>
       </div>
       
       <nav className="nav-links">
-        <NavLink to="/" className={({ isActive }) => `nav-item ${isActive ? 'active' : ''}`} end>
+        <NavLink to="/" onClick={() => window.innerWidth < 1024 && toggle()} className={({ isActive }) => `nav-item ${isActive ? 'active' : ''}`} end>
           <LayoutDashboard /> Dashboard
         </NavLink>
-        <NavLink to="/books" className={({ isActive }) => `nav-item ${isActive ? 'active' : ''}`}>
+        <NavLink to="/books" onClick={() => window.innerWidth < 1024 && toggle()} className={({ isActive }) => `nav-item ${isActive ? 'active' : ''}`}>
           <BookOpen /> Books
         </NavLink>
-        <NavLink to="/students" className={({ isActive }) => `nav-item ${isActive ? 'active' : ''}`}>
+        <NavLink to="/students" onClick={() => window.innerWidth < 1024 && toggle()} className={({ isActive }) => `nav-item ${isActive ? 'active' : ''}`}>
           <Users /> Students
         </NavLink>
-        <NavLink to="/borrow" className={({ isActive }) => `nav-item ${isActive ? 'active' : ''}`}>
+        <NavLink to="/borrow" onClick={() => window.innerWidth < 1024 && toggle()} className={({ isActive }) => `nav-item ${isActive ? 'active' : ''}`}>
           <ArrowLeftRight /> Borrow
         </NavLink>
-        <NavLink to="/return" className={({ isActive }) => `nav-item ${isActive ? 'active' : ''}`}>
+        <NavLink to="/return" onClick={() => window.innerWidth < 1024 && toggle()} className={({ isActive }) => `nav-item ${isActive ? 'active' : ''}`}>
           <RotateCcw /> Return
         </NavLink>
-        <NavLink to="/defaulters" className={({ isActive }) => `nav-item ${isActive ? 'active' : ''}`}>
+        <NavLink to="/defaulters" onClick={() => window.innerWidth < 1024 && toggle()} className={({ isActive }) => `nav-item ${isActive ? 'active' : ''}`}>
           <AlertCircle /> Defaulters
         </NavLink>
 
@@ -54,6 +63,7 @@ const Sidebar = ({ sections }) => {
             key={section.id} 
             to={`/sections/${section.id}`} 
             state={{ sectionName: section.name }}
+            onClick={() => window.innerWidth < 1024 && toggle()}
             className={({ isActive }) => `nav-item ${isActive ? 'active' : ''}`}
           >
             <ChevronRight size={16} /> {section.name}
@@ -91,6 +101,7 @@ const Header = () => {
 export default function App() {
   const [sections, setSections] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [sidebarOpen, setSidebarOpen] = useState(false);
 
   useEffect(() => {
     api.get('/sections')
@@ -99,12 +110,47 @@ export default function App() {
       .finally(() => setLoading(false));
   }, []);
 
+  const toggleSidebar = () => setSidebarOpen(!sidebarOpen);
+
   if (loading) return <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', width: '100vw', height: '100vh', background: 'var(--bg-color)', color: 'white' }}>Initializing BiblioDesk...</div>;
 
   return (
     <Router>
       <div className="app-container">
-        <Sidebar sections={sections} />
+        <button 
+          className="mobile-menu-toggle"
+          onClick={toggleSidebar}
+          style={{
+            position: 'fixed',
+            top: '1rem',
+            left: '1rem',
+            zIndex: 1100,
+            padding: '0.75rem',
+            borderRadius: '12px',
+            background: 'var(--panel-bg)',
+            backdropFilter: 'blur(10px)',
+            border: '1px solid var(--panel-border)',
+            display: 'none'
+          }}
+        >
+          <Menu size={24} color="white" />
+        </button>
+
+        {sidebarOpen && (
+          <div 
+            className="sidebar-overlay"
+            onClick={toggleSidebar}
+            style={{
+              position: 'fixed',
+              inset: 0,
+              background: 'rgba(0,0,0,0.5)',
+              backdropFilter: 'blur(4px)',
+              zIndex: 900
+            }}
+          />
+        )}
+
+        <Sidebar sections={sections} isOpen={sidebarOpen} toggle={toggleSidebar} />
         <main className="main-content">
           <Header />
           <div className="animate-fade">

@@ -3,7 +3,10 @@ from pathlib import Path
 
 # Use an absolute DB path so app behavior is stable from any working directory.
 BASE_DIR = Path(__file__).resolve().parent
-DEFAULT_DB_PATH = BASE_DIR / "library.db"
+if os.getenv("VERCEL"):
+    DEFAULT_DB_PATH = Path("/tmp/library.db")
+else:
+    DEFAULT_DB_PATH = BASE_DIR / "library.db"
 
 # Allow override in production deployments.
 DATABASE_URL = os.getenv("DATABASE_URL", f"sqlite:///{DEFAULT_DB_PATH.as_posix()}")
