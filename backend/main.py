@@ -6,11 +6,13 @@ from sqlalchemy.orm import Session
 
 from backend import crud, schemas
 from backend.database import Base, SessionLocal, engine
+from backend import models
 
 app = FastAPI(
     title="Library Management API",
     version="1.0.0",
     description="API for sections, books, students, borrowing, returns, and overdue fines.",
+    root_path="/api",
 )
 
 # Allow local Streamlit app to call this API.
